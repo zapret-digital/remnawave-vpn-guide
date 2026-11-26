@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Личный VPN на Remnawave</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2222%22%20fill%3D%22%23050507%22/%3E%3Cpath%20d%3D%22M50%2018%2077%2029v20c0%2017-11%2028-27%2034-16-6-27-17-27-34V29z%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%228%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E">
 <meta name="description" content="Пошаговый гайд по личному VPN на Remnawave (VLESS + REALITY) на одном сервере, установка скриптом или вручную.">
 <style>
 :root {
@@ -115,12 +116,192 @@ figure figcaption { color: var(--muted); font-size: 14.5px; line-height: 1.5; ma
   figure img { max-height: 115mm; width: auto; max-width: 100%; }
   figure figcaption { font-size: 9pt; margin-top: 4pt; }
 }
+
+/* ── Экранный вид. Печать не трогаем: всё ниже только для screen. ── */
+@media screen {
+  :root {
+    color-scheme: dark;
+    --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --ink: #050507; --ink-soft: #0b0b10; --line: #1c1d22; --line-soft: #15161b;
+    --white: #f4f4f6; --read: #c9ccd3; --haze: #9aa0ab; --haze-dim: #5c606b; --rail: #7d828d;
+    --bg: var(--ink); --surface: var(--ink-soft); --text: var(--white); --muted: var(--haze); --border: var(--line);
+    --accent: var(--white); --code-bg: #08080c; --code-head: #08080c; --code-text: #e6e8ec;
+    --code-muted: var(--haze-dim); --inline-bg: #121318; --th-bg: #0e0f14; --row-alt: transparent;
+  }
+  html { scrollbar-color: #1c1d22 var(--ink); }
+  body { background: var(--ink); color: var(--read); font: 17px/1.7 var(--sans); -webkit-font-smoothing: antialiased; }
+  ::selection { background: rgba(255,255,255,.18); color: #fff; }
+  :focus-visible { outline: 2px solid var(--white); outline-offset: 3px; border-radius: 6px; }
+  .page { max-width: none; padding: 0; }
+
+  header.hero {
+    position: relative; padding: clamp(56px, 9vw, 112px) max(16px, calc((100vw - 1100px) / 2)) 76px;
+    border-bottom: 1px solid var(--line-soft);
+    background:
+      radial-gradient(circle 1.4px at 9% 64%, rgba(255,255,255,.55) 98%, transparent),
+      radial-gradient(circle 1px at 27% 22%, rgba(255,255,255,.4) 98%, transparent),
+      radial-gradient(circle 1.4px at 46% 12%, rgba(255,255,255,.5) 98%, transparent),
+      radial-gradient(circle 1px at 61% 78%, rgba(255,255,255,.35) 98%, transparent),
+      radial-gradient(circle 1.4px at 74% 30%, rgba(255,255,255,.5) 98%, transparent),
+      radial-gradient(circle 1px at 86% 58%, rgba(255,255,255,.4) 98%, transparent),
+      radial-gradient(circle 1px at 93% 16%, rgba(255,255,255,.45) 98%, transparent),
+      radial-gradient(circle 1px at 38% 90%, rgba(255,255,255,.3) 98%, transparent),
+      radial-gradient(55% 70% at 90% 0%, rgba(255,255,255,.07), transparent 70%),
+      radial-gradient(50% 60% at 0% 100%, rgba(255,255,255,.045), transparent 70%),
+      var(--ink);
+  }
+  .hero-top { margin-bottom: 22px; }
+  .hero-label { color: var(--haze); font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .16em; }
+  header.hero h1 { margin: 0; font: 700 clamp(40px, 7vw, 84px)/1.03 var(--display); letter-spacing: -.035em; }
+  header.hero h1 span { display: block; padding-bottom: .04em; -webkit-background-clip: text; background-clip: text; color: transparent; }
+  header.hero .metal { background-image: linear-gradient(180deg, #fff 0%, #e6e8ec 46%, #8e939d 100%); }
+  header.hero .dim { background-image: linear-gradient(180deg, #a3a8b2 0%, #5f636c 100%); }
+  header.hero .sub { margin: 28px 0 0; max-width: 58ch; color: var(--haze); font-size: clamp(16px, 1.5vw, 19px); line-height: 1.55; }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
+  .btn {
+    display: inline-flex; align-items: center; height: 46px; padding: 0 22px; border-radius: 999px;
+    font: 600 15px/1 var(--sans); text-decoration: none; color: #e6e8ec;
+    background: #0e0f14; border: 1px solid #2a2b32; transition: background .2s, border-color .2s;
+  }
+  .btn:hover { background: #15161c; border-color: #3a3b44; }
+  .btn.primary { background: var(--white); border-color: var(--white); color: var(--ink); }
+  .btn.primary:hover { background: #fff; }
+
+  main { max-width: 752px; margin: 0 auto; padding: 64px 16px 128px; }
+  h2 {
+    color: var(--white); font: 700 30px/1.2 var(--display); letter-spacing: -.022em;
+    margin: 48px 0 18px; padding-top: 36px; border-top: 1px solid var(--line-soft); scroll-margin-top: 24px;
+  }
+  h3 { color: #eceef1; font: 650 21px/1.3 var(--display); letter-spacing: -.012em; margin: 40px 0 12px; scroll-margin-top: 24px; }
+  h2 a.anchor:hover::after, h3 a.anchor:hover::after { color: var(--haze-dim); }
+  p { margin: 0 0 16px; text-wrap: pretty; }
+  a { color: var(--white); text-decoration-color: rgba(154,160,171,.45); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--white); }
+  ol { padding-left: 22px; }
+  li::marker { color: var(--haze-dim); font-variant-numeric: tabular-nums; }
+  code { background: #121318; border: 1px solid #1f2027; color: #e6e8ec; border-radius: 6px; padding: .08em .38em; font-size: .86em; }
+
+  .code { margin: 4px 0 24px; background: var(--code-bg); border: 1px solid var(--line); border-radius: 14px; }
+  .code-head {
+    background: transparent; border-bottom: 1px solid #121318; padding: 8px 8px 8px 16px;
+    color: var(--haze-dim); font: 500 11px/1.4 var(--mono); text-transform: uppercase; letter-spacing: .1em;
+  }
+  .copy {
+    border: 1px solid #2a2b32; background: #121318; color: #c7ccd4; border-radius: 999px;
+    padding: 7px 13px; font: 500 12.5px/1 var(--sans); text-transform: none; letter-spacing: 0;
+    transition: background .2s, border-color .2s, color .2s;
+  }
+  .copy:hover { background: #1a1b21; border-color: #3a3b44; color: #fff; }
+  .copy.ok { border-color: var(--white); color: var(--white); }
+  .code pre { padding: 16px 18px 18px; font-size: 13.5px; line-height: 1.65; }
+  .code pre code { border: 0; background: none; padding: 0; border-radius: 0; font-size: 1em; }
+  .code .c { color: var(--haze-dim); font-style: normal; }
+
+  .table-wrap { background: var(--ink-soft); border: 1px solid var(--line); border-radius: 14px; }
+  th, td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); font-size: 14.5px; line-height: 1.55; overflow-wrap: break-word; hyphens: auto; }
+  th { background: #0e0f14; color: var(--haze); font-weight: 600; }
+  td { color: var(--read); }
+  tbody tr:nth-child(even) td { background: transparent; }
+
+  figure { margin: 8px 0 28px; }
+  figure img { border: 1px solid var(--line); border-radius: 14px; background: var(--ink-soft); }
+  figure figcaption { color: var(--haze-dim); font-size: 13.5px; margin-top: 10px; }
+
+  .toc { background: var(--ink-soft); border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px; margin: 8px 0 16px; }
+  .toc-title { color: var(--haze-dim); font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 14px; }
+  .toc a { color: var(--read); text-decoration: none; }
+  .toc a:hover { color: #fff; }
+  .toc ol ol a { color: var(--rail); }
+
+  .progress {
+    position: fixed; top: 0; left: 0; z-index: 10; width: 100%; height: 2px; pointer-events: none;
+    transform-origin: 0 50%; transform: scaleX(0); background: linear-gradient(90deg, var(--haze-dim), var(--white));
+  }
+
+  @media (min-width: 1180px) {
+    main {
+      max-width: 1100px; padding: 72px 0 144px;
+      display: grid; grid-template-columns: 232px minmax(0, 1fr); column-gap: 80px; align-items: start;
+    }
+    main > * { grid-column: 2; max-width: 720px; }
+    main > nav.toc {
+      grid-column: 1; grid-row: 1 / span 999; align-self: start; position: sticky; top: 28px;
+      max-height: calc(100vh - 56px); overflow: auto; scrollbar-width: none;
+      background: none; border: 0; border-radius: 0; padding: 0; margin: 0;
+    }
+    main > nav.toc::-webkit-scrollbar { display: none; }
+    .toc ol { columns: 1; }
+    .toc > ol { border-left: 1px solid var(--line); }
+    .toc li { margin: 0; }
+    .toc a {
+      display: block; margin-left: -1px; padding: 5px 0 5px 16px; border-left: 1px solid transparent;
+      color: var(--rail); font-size: 14px; line-height: 1.4; transition: color .2s, border-color .2s;
+    }
+    .toc ol ol { padding-left: 0; margin: 0 0 4px; }
+    .toc ol ol a { padding-left: 28px; font-size: 13px; color: var(--haze-dim); }
+    .toc a:hover { color: #e6e8ec; }
+    .toc > ol > li.open > a { color: var(--white); }
+    .toc a.active { color: var(--white); border-left-color: var(--white); }
+    .js .toc ol ol { display: none; }
+    .js .toc li.open > ol { display: block; }
+  }
+  @media (max-width: 640px) {
+    body { font-size: 16.5px; }
+    header.hero { padding-top: 48px; padding-bottom: 56px; }
+    main { padding-top: 44px; }
+    h2 { font-size: 25px; margin-top: 40px; padding-top: 30px; }
+    .js .table-wrap { overflow: visible; }
+    .js table { min-width: 0; }
+    .js thead { display: none; }
+    .js table, .js tbody, .js tr, .js td { display: block; width: 100%; }
+    .js tbody tr { padding: 14px 16px; border-bottom: 1px solid var(--line-soft); }
+    .js tbody tr:last-child { border-bottom: 0; }
+    .js td, .js tbody tr:last-child td { padding: 0; border: 0; overflow-wrap: anywhere; }
+    .js td::before { content: attr(data-label); display: block; margin: 10px 0 2px; color: var(--haze-dim); font: 500 11px/1.4 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .js td:first-child { color: var(--white); font-weight: 600; }
+    .js td:first-child::before { margin-top: 0; }
+    h3 { font-size: 19px; }
+    .toc { padding: 18px; }
+    .hero-actions .btn { flex: 1 1 0; justify-content: center; }
+    .hero-actions .btn.primary { flex-basis: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+}
+@media print {
+  .hero-top, .hero-actions, .progress { display: none !important; }
+}
+
+/* ── Подсветка кода (Prism). Раскрашенная копия видна только на экране. ── */
+@media screen {
+  .has-hl pre code:not(.hl) { display: none; }
+  code.hl { color: #e6e8ec; }
+  .token.comment, .token.prolog, .token.shebang { color: #5c606b; }
+  .token.punctuation, .token.operator { color: #7d828d; }
+  .token.string, .token.char, .token.attr-value { color: #b5d0a4; }
+  .token.number, .token.boolean, .token.constant, .token.null { color: #e7aa84; }
+  .token.keyword, .token.important, .token.atrule { color: #c3a8ff; }
+  .token.function, .token.builtin, .token.class-name { color: #8fc0ff; }
+  .token.variable, .token.parameter, .token.environment { color: #e3c27e; }
+  .token.property, .token.key, .token.attr-name { color: #a9b6ff; }
+  .token.assign-left, .token.file-descriptor, .token.for-or-select { color: inherit; }
+}
+@media print {
+  code.hl { display: none !important; }
+}
 </style>
 </head>
 <body>
 <div class="page">
-<header><h1>Как поднять личный VPN на Remnawave</h1><p class="sub">Remnawave 3.4, VLESS + REALITY, один сервер, установка скриптом или вручную. Ноябрь 2026.</p>
-<p class="print-only">Это PDF-версия гайда. Длинные команды и текст скрипта здесь переносятся на несколько строк, поэтому копировать их нужно из HTML-версии (кнопка «Копировать») или из файла install.sh.</p></header>
+<header class="hero">
+<div class="hero-top"><span class="hero-label">Гайд</span></div>
+<h1><span class="metal">Как поднять личный VPN</span> <span class="dim">на Remnawave</span></h1><p class="sub">Remnawave 3.4, VLESS + REALITY, один сервер, установка скриптом или вручную. Ноябрь 2026.</p>
+<p class="print-only">Это PDF-версия гайда. Длинные команды и текст скрипта здесь переносятся на несколько строк, поэтому копировать их нужно из HTML-версии (кнопка «Копировать») или из файла install.sh.</p>
+<div class="hero-actions"><a class="btn primary" href="#s10">Установка скриптом</a><a class="btn" href="https://github.com/zapret-digital/remnawave-vpn-guide">GitHub</a><a class="btn" href="https://github.com/zapret-digital/remnawave-vpn-guide/releases/latest/download/remnawave-mini-guide.pdf">PDF</a></div></header>
 <main>
 <p>Здесь описано, как поднять личный VPN на панели <a href="https://docs.rw" target="_blank" rel="noopener">Remnawave</a> с протоколом VLESS и маскировкой REALITY. Поставить его можно двумя способами. Скрипт сделает всё сам и в конце покажет ссылку и QR-код для приложения. При ручной установке вы пройдёте те же шаги в панели сами и увидите, что где настроено. Результат одинаковый. В обоих случаях нужно купить сервер и домен и создать две записи в DNS. На всё уходит около часа, и большую часть этого времени вы просто ждёте.</p>
 <p>Команды рассчитаны на Remnawave 3.4 (панель 3.4.11, нода 3.4.6). Скрипт и блоки команд заканчивают работу строкой «ГОТОВО». Если вместо неё написано «СТОП», прочитайте сообщение, исправьте причину и запустите то же самое ещё раз. Повторный запуск ничего не ломает, потому что готовые шаги пропускаются.</p>
@@ -1062,6 +1243,114 @@ if [ "${BASH_SOURCE[0]}" = "$0" ]; then main "$@"; fi</code></pre></div>
         navigator.clipboard.writeText(text).then(done, function () { fallback(text); done(); });
       } else { fallback(text); done(); }
     });
+  });
+})();
+</script>
+<script>
+(function () {
+  var root = document.documentElement;
+  root.classList.add('js');
+  document.querySelectorAll('table').forEach(function (t) {
+    var heads = Array.prototype.map.call(t.querySelectorAll('thead th'), function (th) { return th.textContent; });
+    t.querySelectorAll('tbody tr').forEach(function (tr) {
+      Array.prototype.forEach.call(tr.children, function (td, i) { td.setAttribute('data-label', heads[i] || ''); });
+    });
+  });
+  var main = document.querySelector('main');
+  var bar = document.createElement('div');
+  bar.className = 'progress';
+  document.body.appendChild(bar);
+
+  var links = {};
+  document.querySelectorAll('.toc a[href^="#"]').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+  var heads = Array.prototype.slice.call(document.querySelectorAll('main h2[id], main h3[id]'));
+  var nav = document.querySelector('main > nav.toc');
+  var current;
+
+  function setActive(id) {
+    if (id === current) return;
+    current = id;
+    document.querySelectorAll('.toc a.active').forEach(function (a) { a.classList.remove('active'); });
+    document.querySelectorAll('.toc li.open').forEach(function (li) { li.classList.remove('open'); });
+    var a = id && links[id];
+    if (!a) return;
+    a.classList.add('active');
+    var top = a.closest('.toc > ol > li');
+    if (top) top.classList.add('open');
+    if (nav && nav.scrollHeight > nav.clientHeight + 4) {
+      var ar = a.getBoundingClientRect(), nr = nav.getBoundingClientRect();
+      if (ar.top < nr.top + 48 || ar.bottom > nr.bottom - 48) nav.scrollTop += ar.top - nr.top - nr.height / 3;
+    }
+  }
+
+  function update() {
+    var r = main.getBoundingClientRect();
+    var total = r.height - window.innerHeight;
+    var p = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 1;
+    bar.style.transform = 'scaleX(' + p + ')';
+    var id = null;
+    for (var i = 0; i < heads.length; i++) {
+      if (heads[i].getBoundingClientRect().top <= 96) id = heads[i].id; else break;
+    }
+    setActive(id);
+  }
+
+  var queued = false;
+  function onScroll() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function () { queued = false; update(); });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  update();
+})();
+</script>
+<script>window.Prism = window.Prism || {}; window.Prism.manual = true;</script>
+<script>
+/*! Prism v1.30.0 — https://prismjs.com
+MIT LICENSE
+
+Copyright (c) 2012 Lea Verou
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+var _self="undefined"!=typeof window?window:"undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?self:{},Prism=function(e){var n=/(?:^|\s)lang(?:uage)?-([\w-]+)(?=\s|$)/i,t=0,r={},a={manual:e.Prism&&e.Prism.manual,disableWorkerMessageHandler:e.Prism&&e.Prism.disableWorkerMessageHandler,util:{encode:function e(n){return n instanceof i?new i(n.type,e(n.content),n.alias):Array.isArray(n)?n.map(e):n.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\u00a0/g," ")},type:function(e){return Object.prototype.toString.call(e).slice(8,-1)},objId:function(e){return e.__id||Object.defineProperty(e,"__id",{value:++t}),e.__id},clone:function e(n,t){var r,i;switch(t=t||{},a.util.type(n)){case"Object":if(i=a.util.objId(n),t[i])return t[i];for(var l in r={},t[i]=r,n)n.hasOwnProperty(l)&&(r[l]=e(n[l],t));return r;case"Array":return i=a.util.objId(n),t[i]?t[i]:(r=[],t[i]=r,n.forEach((function(n,a){r[a]=e(n,t)})),r);default:return n}},getLanguage:function(e){for(;e;){var t=n.exec(e.className);if(t)return t[1].toLowerCase();e=e.parentElement}return"none"},setLanguage:function(e,t){e.className=e.className.replace(RegExp(n,"gi"),""),e.classList.add("language-"+t)},currentScript:function(){if("undefined"==typeof document)return null;if(document.currentScript&&"SCRIPT"===document.currentScript.tagName)return document.currentScript;try{throw new Error}catch(r){var e=(/at [^(\r\n]*\((.*):[^:]+:[^:]+\)$/i.exec(r.stack)||[])[1];if(e){var n=document.getElementsByTagName("script");for(var t in n)if(n[t].src==e)return n[t]}return null}},isActive:function(e,n,t){for(var r="no-"+n;e;){var a=e.classList;if(a.contains(n))return!0;if(a.contains(r))return!1;e=e.parentElement}return!!t}},languages:{plain:r,plaintext:r,text:r,txt:r,extend:function(e,n){var t=a.util.clone(a.languages[e]);for(var r in n)t[r]=n[r];return t},insertBefore:function(e,n,t,r){var i=(r=r||a.languages)[e],l={};for(var o in i)if(i.hasOwnProperty(o)){if(o==n)for(var s in t)t.hasOwnProperty(s)&&(l[s]=t[s]);t.hasOwnProperty(o)||(l[o]=i[o])}var u=r[e];return r[e]=l,a.languages.DFS(a.languages,(function(n,t){t===u&&n!=e&&(this[n]=l)})),l},DFS:function e(n,t,r,i){i=i||{};var l=a.util.objId;for(var o in n)if(n.hasOwnProperty(o)){t.call(n,o,n[o],r||o);var s=n[o],u=a.util.type(s);"Object"!==u||i[l(s)]?"Array"!==u||i[l(s)]||(i[l(s)]=!0,e(s,t,o,i)):(i[l(s)]=!0,e(s,t,null,i))}}},plugins:{},highlightAll:function(e,n){a.highlightAllUnder(document,e,n)},highlightAllUnder:function(e,n,t){var r={callback:t,container:e,selector:'code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code'};a.hooks.run("before-highlightall",r),r.elements=Array.prototype.slice.apply(r.container.querySelectorAll(r.selector)),a.hooks.run("before-all-elements-highlight",r);for(var i,l=0;i=r.elements[l++];)a.highlightElement(i,!0===n,r.callback)},highlightElement:function(n,t,r){var i=a.util.getLanguage(n),l=a.languages[i];a.util.setLanguage(n,i);var o=n.parentElement;o&&"pre"===o.nodeName.toLowerCase()&&a.util.setLanguage(o,i);var s={element:n,language:i,grammar:l,code:n.textContent};function u(e){s.highlightedCode=e,a.hooks.run("before-insert",s),s.element.innerHTML=s.highlightedCode,a.hooks.run("after-highlight",s),a.hooks.run("complete",s),r&&r.call(s.element)}if(a.hooks.run("before-sanity-check",s),(o=s.element.parentElement)&&"pre"===o.nodeName.toLowerCase()&&!o.hasAttribute("tabindex")&&o.setAttribute("tabindex","0"),!s.code)return a.hooks.run("complete",s),void(r&&r.call(s.element));if(a.hooks.run("before-highlight",s),s.grammar)if(t&&e.Worker){var c=new Worker(a.filename);c.onmessage=function(e){u(e.data)},c.postMessage(JSON.stringify({language:s.language,code:s.code,immediateClose:!0}))}else u(a.highlight(s.code,s.grammar,s.language));else u(a.util.encode(s.code))},highlight:function(e,n,t){var r={code:e,grammar:n,language:t};if(a.hooks.run("before-tokenize",r),!r.grammar)throw new Error('The language "'+r.language+'" has no grammar.');return r.tokens=a.tokenize(r.code,r.grammar),a.hooks.run("after-tokenize",r),i.stringify(a.util.encode(r.tokens),r.language)},tokenize:function(e,n){var t=n.rest;if(t){for(var r in t)n[r]=t[r];delete n.rest}var a=new s;return u(a,a.head,e),o(e,a,n,a.head,0),function(e){for(var n=[],t=e.head.next;t!==e.tail;)n.push(t.value),t=t.next;return n}(a)},hooks:{all:{},add:function(e,n){var t=a.hooks.all;t[e]=t[e]||[],t[e].push(n)},run:function(e,n){var t=a.hooks.all[e];if(t&&t.length)for(var r,i=0;r=t[i++];)r(n)}},Token:i};function i(e,n,t,r){this.type=e,this.content=n,this.alias=t,this.length=0|(r||"").length}function l(e,n,t,r){e.lastIndex=n;var a=e.exec(t);if(a&&r&&a[1]){var i=a[1].length;a.index+=i,a[0]=a[0].slice(i)}return a}function o(e,n,t,r,s,g){for(var f in t)if(t.hasOwnProperty(f)&&t[f]){var h=t[f];h=Array.isArray(h)?h:[h];for(var d=0;d<h.length;++d){if(g&&g.cause==f+","+d)return;var v=h[d],p=v.inside,m=!!v.lookbehind,y=!!v.greedy,k=v.alias;if(y&&!v.pattern.global){var x=v.pattern.toString().match(/[imsuy]*$/)[0];v.pattern=RegExp(v.pattern.source,x+"g")}for(var b=v.pattern||v,w=r.next,A=s;w!==n.tail&&!(g&&A>=g.reach);A+=w.value.length,w=w.next){var P=w.value;if(n.length>e.length)return;if(!(P instanceof i)){var E,S=1;if(y){if(!(E=l(b,A,e,m))||E.index>=e.length)break;var L=E.index,O=E.index+E[0].length,C=A;for(C+=w.value.length;L>=C;)C+=(w=w.next).value.length;if(A=C-=w.value.length,w.value instanceof i)continue;for(var j=w;j!==n.tail&&(C<O||"string"==typeof j.value);j=j.next)S++,C+=j.value.length;S--,P=e.slice(A,C),E.index-=A}else if(!(E=l(b,0,P,m)))continue;L=E.index;var N=E[0],_=P.slice(0,L),M=P.slice(L+N.length),W=A+P.length;g&&W>g.reach&&(g.reach=W);var I=w.prev;if(_&&(I=u(n,I,_),A+=_.length),c(n,I,S),w=u(n,I,new i(f,p?a.tokenize(N,p):N,k,N)),M&&u(n,w,M),S>1){var T={cause:f+","+d,reach:W};o(e,n,t,w.prev,A,T),g&&T.reach>g.reach&&(g.reach=T.reach)}}}}}}function s(){var e={value:null,prev:null,next:null},n={value:null,prev:e,next:null};e.next=n,this.head=e,this.tail=n,this.length=0}function u(e,n,t){var r=n.next,a={value:t,prev:n,next:r};return n.next=a,r.prev=a,e.length++,a}function c(e,n,t){for(var r=n.next,a=0;a<t&&r!==e.tail;a++)r=r.next;n.next=r,r.prev=n,e.length-=a}if(e.Prism=a,i.stringify=function e(n,t){if("string"==typeof n)return n;if(Array.isArray(n)){var r="";return n.forEach((function(n){r+=e(n,t)})),r}var i={type:n.type,content:e(n.content,t),tag:"span",classes:["token",n.type],attributes:{},language:t},l=n.alias;l&&(Array.isArray(l)?Array.prototype.push.apply(i.classes,l):i.classes.push(l)),a.hooks.run("wrap",i);var o="";for(var s in i.attributes)o+=" "+s+'="'+(i.attributes[s]||"").replace(/"/g,"&quot;")+'"';return"<"+i.tag+' class="'+i.classes.join(" ")+'"'+o+">"+i.content+"</"+i.tag+">"},!e.document)return e.addEventListener?(a.disableWorkerMessageHandler||e.addEventListener("message",(function(n){var t=JSON.parse(n.data),r=t.language,i=t.code,l=t.immediateClose;e.postMessage(a.highlight(i,a.languages[r],r)),l&&e.close()}),!1),a):a;var g=a.util.currentScript();function f(){a.manual||a.highlightAll()}if(g&&(a.filename=g.src,g.hasAttribute("data-manual")&&(a.manual=!0)),!a.manual){var h=document.readyState;"loading"===h||"interactive"===h&&g&&g.defer?document.addEventListener("DOMContentLoaded",f):window.requestAnimationFrame?window.requestAnimationFrame(f):window.setTimeout(f,16)}return a}(_self);"undefined"!=typeof module&&module.exports&&(module.exports=Prism),"undefined"!=typeof global&&(global.Prism=Prism);
+!function(e){var t="\\b(?:BASH|BASHOPTS|BASH_ALIASES|BASH_ARGC|BASH_ARGV|BASH_CMDS|BASH_COMPLETION_COMPAT_DIR|BASH_LINENO|BASH_REMATCH|BASH_SOURCE|BASH_VERSINFO|BASH_VERSION|COLORTERM|COLUMNS|COMP_WORDBREAKS|DBUS_SESSION_BUS_ADDRESS|DEFAULTS_PATH|DESKTOP_SESSION|DIRSTACK|DISPLAY|EUID|GDMSESSION|GDM_LANG|GNOME_KEYRING_CONTROL|GNOME_KEYRING_PID|GPG_AGENT_INFO|GROUPS|HISTCONTROL|HISTFILE|HISTFILESIZE|HISTSIZE|HOME|HOSTNAME|HOSTTYPE|IFS|INSTANCE|JOB|LANG|LANGUAGE|LC_ADDRESS|LC_ALL|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME|LESSCLOSE|LESSOPEN|LINES|LOGNAME|LS_COLORS|MACHTYPE|MAILCHECK|MANDATORY_PATH|NO_AT_BRIDGE|OLDPWD|OPTERR|OPTIND|ORBIT_SOCKETDIR|OSTYPE|PAPERSIZE|PATH|PIPESTATUS|PPID|PS1|PS2|PS3|PS4|PWD|RANDOM|REPLY|SECONDS|SELINUX_INIT|SESSION|SESSIONTYPE|SESSION_MANAGER|SHELL|SHELLOPTS|SHLVL|SSH_AUTH_SOCK|TERM|UID|UPSTART_EVENTS|UPSTART_INSTANCE|UPSTART_JOB|UPSTART_SESSION|USER|WINDOWID|XAUTHORITY|XDG_CONFIG_DIRS|XDG_CURRENT_DESKTOP|XDG_DATA_DIRS|XDG_GREETER_DATA_DIR|XDG_MENU_PREFIX|XDG_RUNTIME_DIR|XDG_SEAT|XDG_SEAT_PATH|XDG_SESSION_DESKTOP|XDG_SESSION_ID|XDG_SESSION_PATH|XDG_SESSION_TYPE|XDG_VTNR|XMODIFIERS)\\b",a={pattern:/(^(["']?)\w+\2)[ \t]+\S.*/,lookbehind:!0,alias:"punctuation",inside:null},n={bash:a,environment:{pattern:RegExp("\\$"+t),alias:"constant"},variable:[{pattern:/\$?\(\([\s\S]+?\)\)/,greedy:!0,inside:{variable:[{pattern:/(^\$\(\([\s\S]+)\)\)/,lookbehind:!0},/^\$\(\(/],number:/\b0x[\dA-Fa-f]+\b|(?:\b\d+(?:\.\d*)?|\B\.\d+)(?:[Ee]-?\d+)?/,operator:/--|\+\+|\*\*=?|<<=?|>>=?|&&|\|\||[=!+\-*/%<>^&|]=?|[?~:]/,punctuation:/\(\(?|\)\)?|,|;/}},{pattern:/\$\((?:\([^)]+\)|[^()])+\)|`[^`]+`/,greedy:!0,inside:{variable:/^\$\(|^`|\)$|`$/}},{pattern:/\$\{[^}]+\}/,greedy:!0,inside:{operator:/:[-=?+]?|[!\/]|##?|%%?|\^\^?|,,?/,punctuation:/[\[\]]/,environment:{pattern:RegExp("(\\{)"+t),lookbehind:!0,alias:"constant"}}},/\$(?:\w+|[#?*!@$])/],entity:/\\(?:[abceEfnrtv\\"]|O?[0-7]{1,3}|U[0-9a-fA-F]{8}|u[0-9a-fA-F]{4}|x[0-9a-fA-F]{1,2})/};e.languages.bash={shebang:{pattern:/^#!\s*\/.*/,alias:"important"},comment:{pattern:/(^|[^"{\\$])#.*/,lookbehind:!0},"function-name":[{pattern:/(\bfunction\s+)[\w-]+(?=(?:\s*\(?:\s*\))?\s*\{)/,lookbehind:!0,alias:"function"},{pattern:/\b[\w-]+(?=\s*\(\s*\)\s*\{)/,alias:"function"}],"for-or-select":{pattern:/(\b(?:for|select)\s+)\w+(?=\s+in\s)/,alias:"variable",lookbehind:!0},"assign-left":{pattern:/(^|[\s;|&]|[<>]\()\w+(?:\.\w+)*(?=\+?=)/,inside:{environment:{pattern:RegExp("(^|[\\s;|&]|[<>]\\()"+t),lookbehind:!0,alias:"constant"}},alias:"variable",lookbehind:!0},parameter:{pattern:/(^|\s)-{1,2}(?:\w+:[+-]?)?\w+(?:\.\w+)*(?=[=\s]|$)/,alias:"variable",lookbehind:!0},string:[{pattern:/((?:^|[^<])<<-?\s*)(\w+)\s[\s\S]*?(?:\r?\n|\r)\2/,lookbehind:!0,greedy:!0,inside:n},{pattern:/((?:^|[^<])<<-?\s*)(["'])(\w+)\2\s[\s\S]*?(?:\r?\n|\r)\3/,lookbehind:!0,greedy:!0,inside:{bash:a}},{pattern:/(^|[^\\](?:\\\\)*)"(?:\\[\s\S]|\$\([^)]+\)|\$(?!\()|`[^`]+`|[^"\\`$])*"/,lookbehind:!0,greedy:!0,inside:n},{pattern:/(^|[^$\\])'[^']*'/,lookbehind:!0,greedy:!0},{pattern:/\$'(?:[^'\\]|\\[\s\S])*'/,greedy:!0,inside:{entity:n.entity}}],environment:{pattern:RegExp("\\$?"+t),alias:"constant"},variable:n.variable,function:{pattern:/(^|[\s;|&]|[<>]\()(?:add|apropos|apt|apt-cache|apt-get|aptitude|aspell|automysqlbackup|awk|basename|bash|bc|bconsole|bg|bzip2|cal|cargo|cat|cfdisk|chgrp|chkconfig|chmod|chown|chroot|cksum|clear|cmp|column|comm|composer|cp|cron|crontab|csplit|curl|cut|date|dc|dd|ddrescue|debootstrap|df|diff|diff3|dig|dir|dircolors|dirname|dirs|dmesg|docker|docker-compose|du|egrep|eject|env|ethtool|expand|expect|expr|fdformat|fdisk|fg|fgrep|file|find|fmt|fold|format|free|fsck|ftp|fuser|gawk|git|gparted|grep|groupadd|groupdel|groupmod|groups|grub-mkconfig|gzip|halt|head|hg|history|host|hostname|htop|iconv|id|ifconfig|ifdown|ifup|import|install|ip|java|jobs|join|kill|killall|less|link|ln|locate|logname|logrotate|look|lpc|lpr|lprint|lprintd|lprintq|lprm|ls|lsof|lynx|make|man|mc|mdadm|mkconfig|mkdir|mke2fs|mkfifo|mkfs|mkisofs|mknod|mkswap|mmv|more|most|mount|mtools|mtr|mutt|mv|nano|nc|netstat|nice|nl|node|nohup|notify-send|npm|nslookup|op|open|parted|passwd|paste|pathchk|ping|pkill|pnpm|podman|podman-compose|popd|pr|printcap|printenv|ps|pushd|pv|quota|quotacheck|quotactl|ram|rar|rcp|reboot|remsync|rename|renice|rev|rm|rmdir|rpm|rsync|scp|screen|sdiff|sed|sendmail|seq|service|sftp|sh|shellcheck|shuf|shutdown|sleep|slocate|sort|split|ssh|stat|strace|su|sudo|sum|suspend|swapon|sync|sysctl|tac|tail|tar|tee|time|timeout|top|touch|tr|traceroute|tsort|tty|umount|uname|unexpand|uniq|units|unrar|unshar|unzip|update-grub|uptime|useradd|userdel|usermod|users|uudecode|uuencode|v|vcpkg|vdir|vi|vim|virsh|vmstat|wait|watch|wc|wget|whereis|which|who|whoami|write|xargs|xdg-open|yarn|yes|zenity|zip|zsh|zypper)(?=$|[)\s;|&])/,lookbehind:!0},keyword:{pattern:/(^|[\s;|&]|[<>]\()(?:case|do|done|elif|else|esac|fi|for|function|if|in|select|then|until|while)(?=$|[)\s;|&])/,lookbehind:!0},builtin:{pattern:/(^|[\s;|&]|[<>]\()(?:\.|:|alias|bind|break|builtin|caller|cd|command|continue|declare|echo|enable|eval|exec|exit|export|getopts|hash|help|let|local|logout|mapfile|printf|pwd|read|readarray|readonly|return|set|shift|shopt|source|test|times|trap|type|typeset|ulimit|umask|unalias|unset)(?=$|[)\s;|&])/,lookbehind:!0,alias:"class-name"},boolean:{pattern:/(^|[\s;|&]|[<>]\()(?:false|true)(?=$|[)\s;|&])/,lookbehind:!0},"file-descriptor":{pattern:/\B&\d\b/,alias:"important"},operator:{pattern:/\d?<>|>\||\+=|=[=~]?|!=?|<<[<-]?|[&\d]?>>|\d[<>]&?|[<>][&=]?|&[>&]?|\|[&|]?/,inside:{"file-descriptor":{pattern:/^\d/,alias:"important"}}},punctuation:/\$?\(\(?|\)\)?|\.\.|[{}[\];\\]/,number:{pattern:/(^|\s)(?:[1-9]\d*|0)(?:[.,]\d+)?\b/,lookbehind:!0}},a.inside=e.languages.bash;for(var s=["comment","function-name","for-or-select","assign-left","parameter","string","environment","function","keyword","builtin","boolean","file-descriptor","operator","punctuation","number"],o=n.variable[1].inside,i=0;i<s.length;i++)o[s[i]]=e.languages.bash[s[i]];e.languages.sh=e.languages.bash,e.languages.shell=e.languages.bash}(Prism);
+Prism.languages.json={property:{pattern:/(^|[^\\])"(?:\\.|[^\\"\r\n])*"(?=\s*:)/,lookbehind:!0,greedy:!0},string:{pattern:/(^|[^\\])"(?:\\.|[^\\"\r\n])*"(?!\s*:)/,lookbehind:!0,greedy:!0},comment:{pattern:/\/\/.*|\/\*[\s\S]*?(?:\*\/|$)/,greedy:!0},number:/-?\b\d+(?:\.\d+)?(?:e[+-]?\d+)?\b/i,punctuation:/[{}[\],]/,operator:/:/,boolean:/\b(?:false|true)\b/,null:{pattern:/\bnull\b/,alias:"keyword"}},Prism.languages.webmanifest=Prism.languages.json;
+!function(e){var n=/[*&][^\s[\]{},]+/,r=/!(?:<[\w\-%#;/?:@&=+$,.!~*'()[\]]+>|(?:[a-zA-Z\d-]*!)?[\w\-%#;/?:@&=+$.~*'()]+)?/,t="(?:"+r.source+"(?:[ \t]+"+n.source+")?|"+n.source+"(?:[ \t]+"+r.source+")?)",a="(?:[^\\s\\x00-\\x08\\x0e-\\x1f!\"#%&'*,\\-:>?@[\\]`{|}\\x7f-\\x84\\x86-\\x9f\\ud800-\\udfff\\ufffe\\uffff]|[?:-]<PLAIN>)(?:[ \t]*(?:(?![#:])<PLAIN>|:<PLAIN>))*".replace(/<PLAIN>/g,(function(){return"[^\\s\\x00-\\x08\\x0e-\\x1f,[\\]{}\\x7f-\\x84\\x86-\\x9f\\ud800-\\udfff\\ufffe\\uffff]"})),d="\"(?:[^\"\\\\\r\n]|\\\\.)*\"|'(?:[^'\\\\\r\n]|\\\\.)*'";function o(e,n){n=(n||"").replace(/m/g,"")+"m";var r="([:\\-,[{]\\s*(?:\\s<<prop>>[ \t]+)?)(?:<<value>>)(?=[ \t]*(?:$|,|\\]|\\}|(?:[\r\n]\\s*)?#))".replace(/<<prop>>/g,(function(){return t})).replace(/<<value>>/g,(function(){return e}));return RegExp(r,n)}e.languages.yaml={scalar:{pattern:RegExp("([\\-:]\\s*(?:\\s<<prop>>[ \t]+)?[|>])[ \t]*(?:((?:\r?\n|\r)[ \t]+)\\S[^\r\n]*(?:\\2[^\r\n]+)*)".replace(/<<prop>>/g,(function(){return t}))),lookbehind:!0,alias:"string"},comment:/#.*/,key:{pattern:RegExp("((?:^|[:\\-,[{\r\n?])[ \t]*(?:<<prop>>[ \t]+)?)<<key>>(?=\\s*:\\s)".replace(/<<prop>>/g,(function(){return t})).replace(/<<key>>/g,(function(){return"(?:"+a+"|"+d+")"}))),lookbehind:!0,greedy:!0,alias:"atrule"},directive:{pattern:/(^[ \t]*)%.+/m,lookbehind:!0,alias:"important"},datetime:{pattern:o("\\d{4}-\\d\\d?-\\d\\d?(?:[tT]|[ \t]+)\\d\\d?:\\d{2}:\\d{2}(?:\\.\\d*)?(?:[ \t]*(?:Z|[-+]\\d\\d?(?::\\d{2})?))?|\\d{4}-\\d{2}-\\d{2}|\\d\\d?:\\d{2}(?::\\d{2}(?:\\.\\d*)?)?"),lookbehind:!0,alias:"number"},boolean:{pattern:o("false|true","i"),lookbehind:!0,alias:"important"},null:{pattern:o("null|~","i"),lookbehind:!0,alias:"important"},string:{pattern:o(d),lookbehind:!0,greedy:!0},number:{pattern:o("[+-]?(?:0x[\\da-f]+|0o[0-7]+|(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:e[+-]?\\d+)?|\\.inf|\\.nan)","i"),lookbehind:!0},tag:r,important:n,punctuation:/---|[:[\]{}\-,|>?]|\.\.\./},e.languages.yml=e.languages.yaml}(Prism);
+!function(e){var i=e.languages.powershell={comment:[{pattern:/(^|[^`])<#[\s\S]*?#>/,lookbehind:!0},{pattern:/(^|[^`])#.*/,lookbehind:!0}],string:[{pattern:/"(?:`[\s\S]|[^`"])*"/,greedy:!0,inside:null},{pattern:/'(?:[^']|'')*'/,greedy:!0}],namespace:/\[[a-z](?:\[(?:\[[^\]]*\]|[^\[\]])*\]|[^\[\]])*\]/i,boolean:/\$(?:false|true)\b/i,variable:/\$\w+\b/,function:[/\b(?:Add|Approve|Assert|Backup|Block|Checkpoint|Clear|Close|Compare|Complete|Compress|Confirm|Connect|Convert|ConvertFrom|ConvertTo|Copy|Debug|Deny|Disable|Disconnect|Dismount|Edit|Enable|Enter|Exit|Expand|Export|Find|ForEach|Format|Get|Grant|Group|Hide|Import|Initialize|Install|Invoke|Join|Limit|Lock|Measure|Merge|Move|New|Open|Optimize|Out|Ping|Pop|Protect|Publish|Push|Read|Receive|Redo|Register|Remove|Rename|Repair|Request|Reset|Resize|Resolve|Restart|Restore|Resume|Revoke|Save|Search|Select|Send|Set|Show|Skip|Sort|Split|Start|Step|Stop|Submit|Suspend|Switch|Sync|Tee|Test|Trace|Unblock|Undo|Uninstall|Unlock|Unprotect|Unpublish|Unregister|Update|Use|Wait|Watch|Where|Write)-[a-z]+\b/i,/\b(?:ac|cat|chdir|clc|cli|clp|clv|compare|copy|cp|cpi|cpp|cvpa|dbp|del|diff|dir|ebp|echo|epal|epcsv|epsn|erase|fc|fl|ft|fw|gal|gbp|gc|gci|gcs|gdr|gi|gl|gm|gp|gps|group|gsv|gu|gv|gwmi|iex|ii|ipal|ipcsv|ipsn|irm|iwmi|iwr|kill|lp|ls|measure|mi|mount|move|mp|mv|nal|ndr|ni|nv|ogv|popd|ps|pushd|pwd|rbp|rd|rdr|ren|ri|rm|rmdir|rni|rnp|rp|rv|rvpa|rwmi|sal|saps|sasv|sbp|sc|select|set|shcm|si|sl|sleep|sls|sort|sp|spps|spsv|start|sv|swmi|tee|trcm|type|write)\b/i],keyword:/\b(?:Begin|Break|Catch|Class|Continue|Data|Define|Do|DynamicParam|Else|ElseIf|End|Exit|Filter|Finally|For|ForEach|From|Function|If|InlineScript|Parallel|Param|Process|Return|Sequence|Switch|Throw|Trap|Try|Until|Using|Var|While|Workflow)\b/i,operator:{pattern:/(^|\W)(?:!|-(?:b?(?:and|x?or)|as|(?:Not)?(?:Contains|In|Like|Match)|eq|ge|gt|is(?:Not)?|Join|le|lt|ne|not|Replace|sh[lr])\b|-[-=]?|\+[+=]?|[*\/%]=?)/i,lookbehind:!0},punctuation:/[|{}[\];(),.]/};i.string[0].inside={function:{pattern:/(^|[^`])\$\((?:\$\([^\r\n()]*\)|(?!\$\()[^\r\n)])*\)/,lookbehind:!0,inside:i},boolean:i.boolean,variable:i.variable}}(Prism);
+</script>
+<script>
+(function () {
+  if (!window.Prism) return;
+  var map = { bash: 'bash', json: 'json', snippet: 'json', yaml: 'yaml', powershell: 'powershell' };
+  document.querySelectorAll('.code[data-lang]').forEach(function (box) {
+    var lang = map[box.getAttribute('data-lang')];
+    var src = box.querySelector('pre code');
+    if (!lang || !src || !Prism.languages[lang]) return;
+    var hl = document.createElement('code');
+    hl.className = 'hl language-' + lang;
+    hl.textContent = src.textContent;
+    src.parentNode.appendChild(hl);
+    Prism.highlightElement(hl);
+    box.classList.add('has-hl');
   });
 })();
 </script>
