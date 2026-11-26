@@ -18,6 +18,7 @@ say() { printf '\n\033[1;36m==> %s\033[0m\n' "$*"; }
 die() { printf '\n\033[1;31mСТОП: %s\033[0m\n' "$*" >&2; exit 1; }
 trap 'printf "\n\033[1;31mСТОП: упало на строке %s. Поправьте и запустите скрипт ещё раз\033[0m\n" "$LINENO" >&2' ERR
 
+# shellcheck source=/dev/null
 load_state() { if [ -f "$STATE" ]; then . "$STATE"; fi; }
 
 save() {
@@ -195,8 +196,7 @@ EOF
 
 wait_panel() {
   say "Жду, пока панель запустится"
-  local i
-  for i in $(seq 1 60); do
+  for _ in $(seq 1 60); do
     if [ "$(docker inspect -f '{{.State.Health.Status}}' remnawave 2>/dev/null)" = healthy ]; then return; fi
     sleep 5
   done
@@ -307,8 +307,7 @@ EOF
     )
   fi
   (cd "$NODE_DIR" && docker compose up -d)
-  local i
-  for i in $(seq 1 36); do
+  for _ in $(seq 1 36); do
     api GET "/nodes/$NODE_UUID"
     if [ "$(jq -r '.response.isConnected' <<<"$RESP")" = true ]; then return; fi
     sleep 5
@@ -349,6 +348,7 @@ show_link() {
 }
 
 do_install() {
+  # shellcheck source=/dev/null
   [ -r /etc/os-release ] && . /etc/os-release
   [ "${ID:-}" = ubuntu ] || die "скрипт рассчитан на Ubuntu 24.04"
   load_state

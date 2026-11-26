@@ -1,0 +1,21 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+      - run: >
+          gh release create "$GITHUB_REF_NAME" remnawave-mini-guide.pdf
+          --verify-tag --notes-from-tag --title "$GITHUB_REF_NAME"
+        env:
+          GH_TOKEN: ${{ github.token }}

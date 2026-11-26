@@ -1,12 +1,27 @@
-# Как поднять личный VPN на Remnawave
+<img src="img/hero.png" width="100%" alt="Как поднять личный VPN на Remnawave">
+
+[![shellcheck](https://github.com/zapret-digital/remnawave-vpn-guide/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/zapret-digital/remnawave-vpn-guide/actions/workflows/shellcheck.yml)
 
 Remnawave 3.4, VLESS + REALITY, один сервер, установка скриптом или вручную. Ноябрь 2026.
 
-PDF-версия: [remnawave-mini-guide.pdf](remnawave-mini-guide.pdf). Скрипт установки: [install.sh](install.sh).
+Гайд на сайте с кнопками «Копировать»: [zapret-digital.github.io/remnawave-vpn-guide](https://zapret-digital.github.io/remnawave-vpn-guide/). PDF: [remnawave-mini-guide.pdf](remnawave-mini-guide.pdf). Скрипт: [install.sh](install.sh).
 
 Здесь описано, как поднять личный VPN на панели [Remnawave](https://docs.rw) с протоколом VLESS и маскировкой REALITY. Поставить его можно двумя способами. Скрипт сделает всё сам и в конце покажет ссылку и QR-код для приложения. При ручной установке вы пройдёте те же шаги в панели сами и увидите, что где настроено. Результат одинаковый. В обоих случаях нужно купить сервер и домен и создать две записи в DNS. На всё уходит около часа, и большую часть этого времени вы просто ждёте.
 
 Команды рассчитаны на Remnawave 3.4 (панель 3.4.11, нода 3.4.6). Скрипт и блоки команд заканчивают работу строкой «ГОТОВО». Если вместо неё написано «СТОП», прочитайте сообщение, исправьте причину и запустите то же самое ещё раз. Повторный запуск ничего не ломает, потому что готовые шаги пропускаются.
+
+## Быстрый старт
+
+1. Купите сервер с Ubuntu 24.04 и домен ([раздел 2](#2-что-понадобится)).
+2. Создайте у домена две A-записи с IP сервера, для панели и для ноды ([раздел 3](#3-записи-в-dns)).
+3. Подключитесь к серверу ([раздел 4](#4-подключение-к-серверу)) и запустите скрипт ([раздел 5](#5-установка-скриптом)):
+
+   ```bash
+   curl -fsSLO https://raw.githubusercontent.com/zapret-digital/remnawave-vpn-guide/v1.0/install.sh
+   bash install.sh
+   ```
+
+4. Вставьте ссылку подписки, которую скрипт покажет в конце, в Happ или INCY ([раздел 7](#7-подключение)).
 
 **Содержание**
 
@@ -150,17 +165,11 @@ ssh-copy-id root@SERVER_IP
 
 ## 5. Установка скриптом
 
-Скрипт install.sh лежит рядом с этим гайдом, а его полный текст есть в конце, в разделе 14. Сначала создайте его на сервере. Команда ниже откроет пустой файл в редакторе nano.
+Скрипт install.sh лежит в [репозитории гайда на GitHub](https://github.com/zapret-digital/remnawave-vpn-guide), а его полный текст есть в конце, в разделе 14. Скачайте его на сервер и запустите.
 
 ```bash
 # на сервере
-nano install.sh
-```
-
-Скопируйте весь текст скрипта (в HTML-версии гайда над ним есть кнопка «Копировать») и вставьте в nano. В Windows Terminal это правая кнопка мыши или Ctrl+V, в macOS Cmd+V. Чтобы сохранить файл и выйти, нажмите Ctrl+O, потом Enter, потом Ctrl+X. Теперь запустите скрипт.
-
-```bash
-# на сервере
+curl -fsSLO https://raw.githubusercontent.com/zapret-digital/remnawave-vpn-guide/v1.0/install.sh
 bash install.sh
 ```
 
@@ -825,7 +834,10 @@ vless://UUID@n1.example.com:8444?encryption=none&type=xhttp&path=/СЛУЧАЙН
 
 ## 14. Текст скрипта install.sh
 
-Этот же текст лежит в файле install.sh рядом с гайдом. Копировать его удобнее из HTML-версии, кнопкой «Копировать».
+Это тот же файл install.sh, который скачивает команда из раздела 5.
+
+<details>
+<summary>Показать текст скрипта</summary>
 
 ```bash
 #!/usr/bin/env bash
@@ -848,6 +860,7 @@ say() { printf '\n\033[1;36m==> %s\033[0m\n' "$*"; }
 die() { printf '\n\033[1;31mСТОП: %s\033[0m\n' "$*" >&2; exit 1; }
 trap 'printf "\n\033[1;31mСТОП: упало на строке %s. Поправьте и запустите скрипт ещё раз\033[0m\n" "$LINENO" >&2' ERR
 
+# shellcheck source=/dev/null
 load_state() { if [ -f "$STATE" ]; then . "$STATE"; fi; }
 
 save() {
@@ -1025,8 +1038,7 @@ EOF
 
 wait_panel() {
   say "Жду, пока панель запустится"
-  local i
-  for i in $(seq 1 60); do
+  for _ in $(seq 1 60); do
     if [ "$(docker inspect -f '{{.State.Health.Status}}' remnawave 2>/dev/null)" = healthy ]; then return; fi
     sleep 5
   done
@@ -1137,8 +1149,7 @@ EOF
     )
   fi
   (cd "$NODE_DIR" && docker compose up -d)
-  local i
-  for i in $(seq 1 36); do
+  for _ in $(seq 1 36); do
     api GET "/nodes/$NODE_UUID"
     if [ "$(jq -r '.response.isConnected' <<<"$RESP")" = true ]; then return; fi
     sleep 5
@@ -1179,6 +1190,7 @@ show_link() {
 }
 
 do_install() {
+  # shellcheck source=/dev/null
   [ -r /etc/os-release ] && . /etc/os-release
   [ "${ID:-}" = ubuntu ] || die "скрипт рассчитан на Ubuntu 24.04"
   load_state
@@ -1240,6 +1252,4 @@ main() {
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then main "$@"; fi
 ```
 
----
-
-Личный VPN на Remnawave, ноябрь 2026.
+</details>

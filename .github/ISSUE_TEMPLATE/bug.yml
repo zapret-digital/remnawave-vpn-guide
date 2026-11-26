@@ -1,0 +1,44 @@
+name: Не работает
+description: Скрипт остановился, нода не подключается или приложение не соединяется
+title: "Не работает: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Сначала загляните в раздел [«10. Если не работает»](https://github.com/zapret-digital/remnawave-vpn-guide#10-если-не-работает).
+
+        Не вставляйте сюда ссылку подписки, пароль панели, SECRET_KEY, приватный ключ REALITY и IP сервера. Вместо них пишите «скрыто».
+  - type: dropdown
+    id: method
+    attributes:
+      label: Как ставили
+      options:
+        - Скриптом install.sh
+        - Вручную
+    validations:
+      required: true
+  - type: input
+    id: step
+    attributes:
+      label: На каком шаге остановились
+      placeholder: "например, 6.5. Запуск ноды"
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Что написано на экране
+      description: Скопируйте строку со «СТОП» и несколько строк перед ней.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: server
+    attributes:
+      label: Сервер
+      placeholder: "хостер и система, например Hetzner и Ubuntu 24.04"
+  - type: input
+    id: client
+    attributes:
+      label: Приложение и устройство
+      placeholder: "например, Happ на iPhone"

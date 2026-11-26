@@ -166,11 +166,9 @@ type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh root@SERVER_IP "mkdir -p ~/.ssh 
 ssh-copy-id root@SERVER_IP</code></pre></div>
 <p>Если когда-нибудь не получится зайти на сервер, в личном кабинете хостера есть веб-консоль (VNC, KVM или просто «Консоль»). Через неё можно войти с паролем root.</p>
 <h2 id="s10"><a class="anchor" href="#s10">5. Установка скриптом</a></h2>
-<p>Скрипт install.sh лежит рядом с этим гайдом, а его полный текст есть в конце, в разделе 14. Сначала создайте его на сервере. Команда ниже откроет пустой файл в редакторе nano.</p>
+<p>Скрипт install.sh лежит в <a href="https://github.com/zapret-digital/remnawave-vpn-guide" target="_blank" rel="noopener">репозитории гайда на GitHub</a>, а его полный текст есть в конце, в разделе 14. Скачайте его на сервер и запустите.</p>
 <div class="code" data-lang="bash"><div class="code-head"><span>bash</span><button type="button" class="copy">Копировать</button></div><pre><code><span class="c"># на сервере</span>
-nano install.sh</code></pre></div>
-<p>Скопируйте весь текст скрипта (в HTML-версии гайда над ним есть кнопка «Копировать») и вставьте в nano. В Windows Terminal это правая кнопка мыши или Ctrl+V, в macOS Cmd+V. Чтобы сохранить файл и выйти, нажмите Ctrl+O, потом Enter, потом Ctrl+X. Теперь запустите скрипт.</p>
-<div class="code" data-lang="bash"><div class="code-head"><span>bash</span><button type="button" class="copy">Копировать</button></div><pre><code><span class="c"># на сервере</span>
+curl -fsSLO https://raw.githubusercontent.com/zapret-digital/remnawave-vpn-guide/v1.0/install.sh
 bash install.sh</code></pre></div>
 <p>Сначала скрипт спросит адрес панели (например adm-k3x9.example.com), потом адрес ноды (например n1.example.com). Дальше он всё сделает сам за 5–10 минут. Обновит систему и поставит Docker, защиту от подбора пароля и ускорение TCP. Поставит панель Remnawave и Caddy, который получит HTTPS-сертификаты, и включит фаервол. Потом создаст администратора панели, ключи REALITY и профиль ноды, запустит ноду, сделает подключения «Основной» и «Запасной» и пользователя myvpn.</p>
 <p>В конце на экране появятся адрес панели, логин и пароль администратора, ссылка подписки и QR-код. Всё это скрипт сохранит в файл /root/remnawave-vpn.txt. Посмотреть его можно командой <code>cat /root/remnawave-vpn.txt</code>. Если закрыли терминал, ссылку и QR-код можно показать снова.</p>
@@ -630,7 +628,7 @@ vless://UUID@n1.example.com:8444?encryption=none&amp;type=xhttp&amp;path=/СЛУ
 <p>Серверы можно взять у <a href="https://www.netcup.com" target="_blank" rel="noopener">Netcup</a>, <a href="https://www.hetzner.com/cloud" target="_blank" rel="noopener">Hetzner</a>, <a href="https://www.digitalocean.com" target="_blank" rel="noopener">DigitalOcean</a>, <a href="https://www.cherryservers.com" target="_blank" rel="noopener">Cherry Servers</a> или <a href="https://v.ps" target="_blank" rel="noopener">V.PS</a>. Домен можно купить у <a href="https://www.namesilo.com" target="_blank" rel="noopener">NameSilo</a>, а DNS держать в <a href="https://www.cloudflare.com" target="_blank" rel="noopener">Cloudflare</a>.</p>
 <p>Ядро VPN называется Xray. Его код лежит в репозитории <a href="https://github.com/XTLS/Xray-core" target="_blank" rel="noopener">XTLS/Xray-core</a>. Про блокировки VPN в России есть <a href="https://habr.com/ru/articles/1047442/" target="_blank" rel="noopener">разбор на Хабре</a>.</p>
 <h2 id="s38"><a class="anchor" href="#s38">14. Текст скрипта install.sh</a></h2>
-<p>Этот же текст лежит в файле install.sh рядом с гайдом. Копировать его удобнее из HTML-версии, кнопкой «Копировать».</p>
+<p>Это тот же файл install.sh, который скачивает команда из раздела 5.</p>
 <div class="code" data-lang="bash"><div class="code-head"><span>bash</span><button type="button" class="copy">Копировать</button></div><pre><code><span class="c">#!/usr/bin/env bash</span>
 
 set -Eeuo pipefail
@@ -651,6 +649,7 @@ say() { printf '\n\033[1;36m==&gt; %s\033[0m\n' "$*"; }
 die() { printf '\n\033[1;31mСТОП: %s\033[0m\n' "$*" &gt;&amp;2; exit 1; }
 trap 'printf "\n\033[1;31mСТОП: упало на строке %s. Поправьте и запустите скрипт ещё раз\033[0m\n" "$LINENO" &gt;&amp;2' ERR
 
+<span class="c"># shellcheck source=/dev/null</span>
 load_state() { if [ -f "$STATE" ]; then . "$STATE"; fi; }
 
 save() {
@@ -828,8 +827,7 @@ EOF
 
 wait_panel() {
   say "Жду, пока панель запустится"
-  local i
-  for i in $(seq 1 60); do
+  for _ in $(seq 1 60); do
     if [ "$(docker inspect -f '{{.State.Health.Status}}' remnawave 2&gt;/dev/null)" = healthy ]; then return; fi
     sleep 5
   done
@@ -940,8 +938,7 @@ EOF
     )
   fi
   (cd "$NODE_DIR" &amp;&amp; docker compose up -d)
-  local i
-  for i in $(seq 1 36); do
+  for _ in $(seq 1 36); do
     api GET "/nodes/$NODE_UUID"
     if [ "$(jq -r '.response.isConnected' &lt;&lt;&lt;"$RESP")" = true ]; then return; fi
     sleep 5
@@ -982,6 +979,7 @@ show_link() {
 }
 
 do_install() {
+  <span class="c"># shellcheck source=/dev/null</span>
   [ -r /etc/os-release ] &amp;&amp; . /etc/os-release
   [ "${ID:-}" = ubuntu ] || die "скрипт рассчитан на Ubuntu 24.04"
   load_state
@@ -1042,7 +1040,6 @@ main() {
 
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then main "$@"; fi</code></pre></div>
 </main>
-<footer>Личный VPN на Remnawave, ноябрь 2026.</footer>
 </div>
 <script>
 (function () {
